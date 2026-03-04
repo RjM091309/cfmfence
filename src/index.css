@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-dark: #1A1C1F;
+  --color-brand-gray-dark: #3A3F45;
+  --color-brand-gray: #6E7781;
+  --color-brand-orange: #FF6A2A;
+  --color-brand-light: #F2F2F0;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-brand-light text-brand-dark font-sans;
+  }
+
+  /* React Select theme overrides */
+  .react-select__control {
+    @apply w-full bg-brand-light border border-brand-gray/20 px-3 py-1.5 shadow-none;
+    min-height: 3rem;
+    box-shadow: none;
+  }
+
+  .react-select__control--is-focused {
+    @apply border-brand-orange ring-0;
+    box-shadow: none;
+  }
+
+  .react-select__value-container {
+    @apply px-1;
+  }
+
+  .react-select__input-container {
+    @apply text-sm text-brand-dark;
+  }
+
+  .react-select__single-value {
+    @apply text-sm text-brand-dark;
+  }
+
+  .react-select__placeholder {
+    @apply text-sm text-brand-gray;
+  }
+
+  .react-select__indicator-separator {
+    @apply bg-brand-gray/20;
+  }
+
+  .react-select__dropdown-indicator {
+    @apply text-brand-gray;
+    color: var(--color-brand-gray);
+  }
+
+  .react-select__control--is-focused .react-select__dropdown-indicator {
+    color: var(--color-brand-orange);
+  }
+
+  .react-select__menu {
+    @apply bg-white border border-brand-gray/20 shadow-lg rounded-none mt-1;
+  }
+
+  .react-select__menu-list {
+    @apply max-h-60;
+  }
+
+  .react-select__option {
+    @apply text-sm text-brand-dark px-3 py-2 cursor-pointer;
+  }
+
+  .react-select__option--is-focused {
+    @apply bg-brand-light;
+  }
+
+  .react-select__option--is-selected {
+    @apply bg-brand-orange text-white;
+  }
+
+  /* Custom Scrollbar Styles */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-brand-dark);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-brand-orange);
+    border: 2px solid var(--color-brand-dark);
+    border-radius: 2px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #E65A20;
+  }
+
+  /* For Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-brand-orange) var(--color-brand-dark);
+  }
+}
