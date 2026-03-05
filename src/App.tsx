@@ -100,7 +100,7 @@ const Navbar = () => {
                   key={link.name}
                   href={link.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block px-3 py-4 text-base font-medium text-brand-dark hover:text-brand-orange border-b border-brand-gray/40"
+                  className="block px-3 py-4 text-base font-medium text-brand-dark hover:text-brand-orange border-b border-brand-gray/40 text-center"
                 >
                   {link.name}
                 </a>
@@ -567,12 +567,13 @@ const Footer = () => {
         <div className="grid md:grid-cols-4 gap-12 mb-16">
           <div className="col-span-2">
             <div className="flex items-center space-x-2 mb-6">
-              <div className="bg-brand-orange p-1.5 rounded">
-                <Fence className="text-white w-6 h-6" />
-              </div>
-              <span className="text-2xl font-bold tracking-tighter">
-                CFM <span className="text-brand-orange">FENCE SOLUTIONS</span>
-              </span>
+              <a href="#home" className="flex items-center">
+                <img
+                  src="/logo.png"
+                  alt="CFM Fence Solutions"
+                  className="h-10 w-auto"
+                />
+              </a>
             </div>
             <p className="text-brand-gray max-w-sm mb-8">
               Providing premium fencing solutions with industrial strength and residential elegance. Your security is our commitment.
