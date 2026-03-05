@@ -12,15 +12,21 @@
 
 @layer base {
   html {
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
   }
   body {
     @apply bg-brand-light text-brand-dark font-sans;
   }
 
+  @media (min-width: 768px) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
   /* React Select theme overrides */
   .react-select__control {
-    @apply w-full bg-brand-light border border-brand-gray/20 px-3 py-1.5 shadow-none;
+    @apply w-full bg-white border border-brand-gray/20 px-3 py-1.5 shadow-none;
     min-height: 3rem;
     box-shadow: none;
   }
@@ -85,7 +91,7 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: var(--color-brand-dark);
+    background: var(--color-brand-light);
   }
 
   ::-webkit-scrollbar-thumb {
@@ -101,6 +107,6 @@
   /* For Firefox */
   * {
     scrollbar-width: thin;
-    scrollbar-color: var(--color-brand-orange) var(--color-brand-dark);
+    scrollbar-color: var(--color-brand-orange) var(--color-brand-light);
   }
 }

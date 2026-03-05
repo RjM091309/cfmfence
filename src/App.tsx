@@ -34,22 +34,23 @@ const Navbar = () => {
   const navLinks = [
     { name: 'Home', href: '#home' },
     { name: 'Services', href: '#services' },
-    { name: 'About', href: '#about' },
+    { name: 'Our Story', href: '#our-story' },
     { name: 'Gallery', href: '#gallery' },
     { name: 'Contact', href: '#contact' },
   ];
 
   return (
-    <nav className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-brand-dark shadow-lg py-3' : 'bg-transparent py-6'}`}>
+    <nav className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-brand-light shadow-lg py-3' : 'bg-transparent py-6'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center text-brand-dark">
           <div className="flex items-center space-x-2">
-            <div className="bg-brand-orange p-1.5 rounded">
-              <Fence className="text-white w-6 h-6" />
-            </div>
-            <span className={`text-2xl font-bold tracking-tighter ${isScrolled || isMobileMenuOpen ? 'text-white' : 'text-white'}`}>
-              CFM <span className="text-brand-orange">FENCE SOLUTIONS</span>
-            </span>
+            <a href="#home" className="flex items-center">
+              <img
+                src="/logo.png"
+                alt="CFM Fence Solutions"
+                className="h-10 w-auto"
+              />
+            </a>
           </div>
 
           {/* Desktop Nav */}
@@ -58,7 +59,7 @@ const Navbar = () => {
               <a
                 key={link.name}
                 href={link.href}
-                className="text-sm font-medium text-brand-light hover:text-brand-orange transition-colors uppercase tracking-widest"
+                className="text-sm font-medium text-brand-dark hover:text-brand-orange transition-colors uppercase tracking-widest"
               >
                 {link.name}
               </a>
@@ -75,7 +76,7 @@ const Navbar = () => {
           <div className="md:hidden">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-white p-2"
+              className="text-brand-dark p-2"
             >
               {isMobileMenuOpen ? <X /> : <Menu />}
             </button>
@@ -90,15 +91,16 @@ const Navbar = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-brand-dark border-t border-brand-gray-dark"
+            transition={{ duration: 0.25 }}
+            className="md:hidden bg-brand-light pt-4"
           >
-            <div className="px-4 pt-2 pb-6 space-y-1">
+            <div className="px-4 pb-6 space-y-1 text-brand-dark">
               {navLinks.map((link) => (
                 <a
                   key={link.name}
                   href={link.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block px-3 py-4 text-base font-medium text-brand-light hover:text-brand-orange border-b border-brand-gray-dark"
+                  className="block px-3 py-4 text-base font-medium text-brand-dark hover:text-brand-orange border-b border-brand-gray/40"
                 >
                   {link.name}
                 </a>
@@ -122,7 +124,7 @@ const Navbar = () => {
 
 const Hero = () => {
   return (
-    <section id="home" className="relative min-h-screen lg:h-screen flex items-center overflow-hidden bg-brand-dark pb-32 lg:pb-0 scroll-mt-20">
+    <section id="home" className="relative min-h-screen lg:h-screen flex items-center overflow-hidden bg-brand-light pb-32 lg:pb-0 scroll-mt-32">
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
         <img
@@ -131,7 +133,7 @@ const Hero = () => {
           className="w-full h-full object-cover opacity-40"
           referrerPolicy="no-referrer"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-brand-dark via-brand-dark/80 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent"></div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
@@ -145,7 +147,7 @@ const Hero = () => {
             <ShieldCheck className="w-4 h-4 text-brand-orange" />
             <span className="text-brand-orange text-xs font-bold uppercase tracking-widest">Premium Quality Guaranteed</span>
           </div>
-          <h1 className="text-4xl md:text-7xl font-black text-white leading-tight mb-6 uppercase tracking-tighter">
+          <h1 className="text-4xl md:text-7xl font-black text-brand-dark leading-tight mb-6 uppercase tracking-tighter">
             SECURE YOUR <br />
             <span className="text-brand-orange">BOUNDARY</span> WITH <br />
             PRECISION
@@ -163,7 +165,7 @@ const Hero = () => {
             </a>
             <a
               href="#gallery"
-              className="border border-brand-gray text-white px-8 py-4 rounded-sm font-bold hover:bg-white/10 transition-all flex items-center justify-center"
+              className="bg-brand-dark/80 text-white px-8 py-4 rounded-sm font-bold hover:bg-brand-dark transition-all flex items-center justify-center"
             >
               View Our Work
             </a>
@@ -172,7 +174,7 @@ const Hero = () => {
       </div>
 
       {/* Stats Overlay */}
-      <div className="absolute bottom-0 left-0 right-0 bg-brand-dark/90 border-t border-brand-gray-dark py-6 lg:py-8">
+      <div className="absolute bottom-0 left-0 right-0 bg-brand-light/90 border-t border-brand-gray/40 py-6 lg:py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8">
             {[
@@ -199,24 +201,24 @@ const Services = () => {
       title: 'Residential Fencing',
       description: 'Enhance your home\'s curb appeal and security with our wide range of wood, vinyl, and ornamental iron fences.',
       icon: <Home className="w-8 h-8" />,
-      image: 'https://images.unsplash.com/photo-1516455590571-18256e5bb9ff?auto=format&fit=crop&q=80&w=800'
+      image: '/proj-2.jpg'
     },
     {
       title: 'Commercial Solutions',
       description: 'Durable and professional fencing for businesses, warehouses, and industrial sites. Security is our priority.',
       icon: <Building2 className="w-8 h-8" />,
-      image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=800'
+      image: '/proj-7.jpg'
     },
     {
       title: 'Industrial & Security',
       description: 'High-security chain link, barbed wire, and automated gate systems for maximum protection of your assets.',
       icon: <Construction className="w-8 h-8" />,
-      image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&q=80&w=800'
+      image: '/proj-6.jpg'
     }
   ];
 
   return (
-    <section id="services" className="py-24 bg-brand-light scroll-mt-20">
+    <section id="services" className="py-24 bg-brand-light scroll-mt-32">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-brand-orange font-bold uppercase tracking-widest text-sm mb-2">What We Do</h2>
@@ -254,14 +256,58 @@ const Services = () => {
             </motion.div>
           ))}
         </div>
+
+        <div className="mt-16 pt-12 border-t border-brand-gray/20">
+          <div className="text-center mb-10">
+            <h2 className="text-brand-orange font-bold uppercase tracking-widest text-sm mb-2">More from us</h2>
+            <h3 className="text-4xl md:text-5xl font-black text-brand-dark uppercase tracking-tighter">Services including</h3>
+            <div className="w-20 h-1.5 bg-brand-orange mx-auto mt-4"></div>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              { title: 'Custom Gates', subtitle: 'Driveway, pedestrian & automated', image: '/proj-1.jpg' },
+              { title: 'Hand/Stair Railings', subtitle: 'Indoor & outdoor, custom fit', image: '/proj-3.jpg' },
+              { title: 'Mailboxes', subtitle: 'Wood, granite and PVC', image: '/proj-4.jpg' },
+              { title: 'Wood/Steel Guard Rail', subtitle: 'Decks, porches & safety rails', image: '/proj-5.jpg' },
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                whileHover={{ y: -10 }}
+                className="bg-white border border-brand-gray/20 overflow-hidden shadow-sm group"
+              >
+                <div className="h-40 overflow-hidden relative">
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute inset-0 bg-brand-dark/20 group-hover:bg-brand-dark/0 transition-colors"></div>
+                </div>
+                <div className="p-6">
+                  <h4 className="text-lg font-bold text-brand-dark uppercase tracking-tight">
+                    {item.title}
+                  </h4>
+                  {item.subtitle && (
+                    <p className="text-brand-gray-dark text-sm mt-1">{item.subtitle}</p>
+                  )}
+                  <a href="#contact" className="inline-flex items-center mt-4 text-brand-orange font-bold text-xs uppercase tracking-widest">
+                    Learn More
+                    <ChevronRight className="ml-1 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </a>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
 };
 
-const About = () => {
+const OurStory = () => {
   return (
-    <section id="about" className="py-24 bg-brand-dark text-white overflow-hidden scroll-mt-20">
+    <section id="our-story" className="py-24 bg-brand-light text-brand-dark overflow-hidden scroll-mt-32">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div className="relative">
@@ -272,10 +318,9 @@ const About = () => {
               className="relative z-10"
             >
               <img
-                src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&q=80&w=800"
+                src="/portrait.png"
                 alt="Our Team"
                 className="rounded-sm shadow-2xl grayscale hover:grayscale-0 transition-all duration-700"
-                referrerPolicy="no-referrer"
               />
             </motion.div>
             <div className="absolute -bottom-6 -right-6 w-64 h-64 bg-brand-orange -z-0 opacity-20"></div>
@@ -283,29 +328,17 @@ const About = () => {
           </div>
 
           <div>
-            <h2 className="text-brand-orange font-bold uppercase tracking-widest text-sm mb-2">About CFM Fence Solutions</h2>
-            <h3 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mb-6">Built on Trust, <br />Forged in Steel</h3>
-            <p className="text-brand-gray text-lg mb-8">
-              For over 15 years, CFM Fence Solutions has been the leading provider of high-quality fencing in the region. We combine traditional craftsmanship with modern technology to deliver results that exceed expectations.
+            <h2 className="text-brand-orange font-bold uppercase tracking-widest text-sm mb-2">Our Story</h2>
+            <h3 className="text-4xl md:text-5xl font-black text-brand-dark uppercase tracking-tighter mb-6">The Family Behind CFM</h3>
+            <p className="text-brand-gray-dark text-lg mb-6">
+              CFM Fence Solutions was founded by Chris with a vision of building more than just fences — but a business rooted in family, integrity, and craftsmanship. The name CFM represents more than initials; it stands for Chris, his wife Francine, and their daughter Maileena — the true foundation and inspiration behind the company.
             </p>
-            
-            <div className="space-y-4 mb-10">
-              {[
-                'Certified & Insured Professionals',
-                'Custom Design & Fabrication',
-                'Highest Grade Materials Only',
-                'Lifetime Workmanship Warranty'
-              ].map((item, i) => (
-                <div key={i} className="flex items-center space-x-3">
-                  <CheckCircle2 className="text-brand-orange w-5 h-5 flex-shrink-0" />
-                  <span className="text-brand-light font-medium">{item}</span>
-                </div>
-              ))}
-            </div>
-
-            <button className="bg-brand-orange text-white px-8 py-4 rounded-sm font-bold hover:bg-orange-600 transition-all uppercase tracking-widest text-sm">
-              Our Full Story
-            </button>
+            <p className="text-brand-gray-dark text-lg mb-6">
+              Built on hard work, dedication, and attention to detail, CFM Fence Solutions was created to provide high-quality, custom fencing solutions that protect and enhance the homes of families in our community. Every project we complete reflects the same care, precision, and pride we would expect for our own home.
+            </p>
+            <p className="text-brand-gray-dark text-lg">
+              At CFM Fence Solutions, we don&apos;t just build fences — we build trust, security, and lasting relationships.
+            </p>
           </div>
         </div>
       </div>
@@ -315,16 +348,16 @@ const About = () => {
 
 const Gallery = () => {
   const images = [
-    'https://images.unsplash.com/photo-1505015920881-0f83c2f7c95e?auto=format&fit=crop&q=80&w=800',
-    'https://images.unsplash.com/photo-1516455590571-18256e5bb9ff?auto=format&fit=crop&q=80&w=800',
-    'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=800',
-    'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&q=80&w=800',
-    'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&q=80&w=800',
-    'https://images.unsplash.com/photo-1505015920881-0f83c2f7c95e?auto=format&fit=crop&q=80&w=800&sig=1'
+    '/proj-2.jpg',
+    '/proj-3.jpg',
+    '/proj-5.jpg',
+    '/proj-7.jpg',
+    '/proj-9.jpg',
+    '/proj-8.jpg',
   ];
 
   return (
-    <section id="gallery" className="py-24 bg-brand-light scroll-mt-20">
+    <section id="gallery" className="py-24 bg-brand-light scroll-mt-32">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-brand-orange font-bold uppercase tracking-widest text-sm mb-2">Our Portfolio</h2>
@@ -366,8 +399,31 @@ const Contact = () => {
 
   const [serviceNeeded, setServiceNeeded] = useState(serviceOptions[0]);
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+
+    try {
+      const res = await fetch('/contact.php', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        throw new Error('Request failed');
+      }
+
+      form.reset();
+      setServiceNeeded(serviceOptions[0]);
+      alert('Thank you! Your request has been sent.');
+    } catch (error) {
+      alert('Sorry, something went wrong. Please try again later.');
+    }
+  };
+
   return (
-    <section id="contact" className="py-24 bg-brand-dark relative overflow-hidden scroll-mt-20">
+    <section id="contact" className="py-24 bg-brand-light relative overflow-hidden scroll-mt-32">
       {/* Decorative Background Element */}
       <div className="absolute top-0 right-0 w-1/3 h-full bg-brand-orange/5 -skew-x-12 transform translate-x-1/2"></div>
 
@@ -375,36 +431,36 @@ const Contact = () => {
         <div className="grid lg:grid-cols-2 gap-16">
           <div>
             <h2 className="text-brand-orange font-bold uppercase tracking-widest text-sm mb-2">Get In Touch</h2>
-            <h3 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mb-8">Ready to Start <br />Your Project?</h3>
+            <h3 className="text-4xl md:text-5xl font-black text-brand-dark uppercase tracking-tighter mb-8">Ready to Start <br />Your Project?</h3>
             
             <div className="space-y-8">
               <div className="flex items-start space-x-4">
-                <div className="bg-brand-gray-dark p-3 rounded-sm">
+                <div className="bg-brand-orange/10 p-3 rounded-sm">
                   <Phone className="text-brand-orange w-6 h-6" />
                 </div>
                 <div>
                   <p className="text-brand-gray text-xs uppercase font-bold tracking-widest mb-1">Call Us</p>
-                  <p className="text-white text-xl font-bold">978-490-5447</p>
+                  <p className="text-brand-dark text-xl font-bold">978-490-5447</p>
                 </div>
               </div>
 
               <div className="flex items-start space-x-4">
-                <div className="bg-brand-gray-dark p-3 rounded-sm">
+                <div className="bg-brand-orange/10 p-3 rounded-sm">
                   <Mail className="text-brand-orange w-6 h-6" />
                 </div>
                 <div>
                   <p className="text-brand-gray text-xs uppercase font-bold tracking-widest mb-1">Email Us</p>
-                  <p className="text-white text-xl font-bold">CFMfencesolution@gmail.com</p>
+                  <p className="text-brand-dark text-xl font-bold">cfmfencesolutions@gmail.com</p>
                 </div>
               </div>
 
               <div className="flex items-start space-x-4">
-                <div className="bg-brand-gray-dark p-3 rounded-sm">
+                <div className="bg-brand-orange/10 p-3 rounded-sm">
                   <MapPin className="text-brand-orange w-6 h-6" />
                 </div>
                 <div>
                   <p className="text-brand-gray text-xs uppercase font-bold tracking-widest mb-1">Visit Us</p>
-                  <p className="text-white text-xl font-bold">-<br /></p>
+                  <p className="text-brand-dark text-xl font-bold">-<br /></p>
                 </div>
               </div>
             </div>
@@ -418,32 +474,35 @@ const Contact = () => {
               <p className="text-brand-light italic text-sm">
                 "CFM Fence Solutions transformed our facility's security. Their attention to detail and professional installation was top-notch."
               </p>
-              <p className="text-brand-orange font-bold text-xs uppercase tracking-widest mt-4">— Robert Chen, Operations Director</p>
+              <p className="text-brand-dark font-bold text-xs uppercase tracking-widest mt-4">— Rj Manapsal, Full Stack Developer</p>
             </div>
           </div>
 
           <div className="bg-white p-8 md:p-12 rounded-sm shadow-2xl">
-            <form className="space-y-6">
+            <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-brand-dark text-xs font-bold uppercase tracking-widest mb-2">Full Name</label>
                   <input 
+                    name="name"
                     type="text" 
-                    className="w-full bg-brand-light border border-brand-gray/20 p-4 focus:outline-none focus:border-brand-orange transition-colors"
+                    className="w-full bg-white border border-brand-gray/20 p-4 focus:outline-none focus:border-brand-orange transition-colors"
                     placeholder="John Doe"
                   />
                 </div>
                 <div>
                   <label className="block text-brand-dark text-xs font-bold uppercase tracking-widest mb-2">Email Address</label>
                   <input 
+                    name="email"
                     type="email" 
-                    className="w-full bg-brand-light border border-brand-gray/20 p-4 focus:outline-none focus:border-brand-orange transition-colors"
+                    className="w-full bg-white border border-brand-gray/20 p-4 focus:outline-none focus:border-brand-orange transition-colors"
                     placeholder="john@example.com"
                   />
                 </div>
               </div>
               <div>
                 <label className="block text-brand-dark text-xs font-bold uppercase tracking-widest mb-2">Service Needed</label>
+                <input type="hidden" name="service" value={serviceNeeded.label} />
                 <Select
                   className="react-select-container"
                   classNamePrefix="react-select"
@@ -484,8 +543,9 @@ const Contact = () => {
               <div>
                 <label className="block text-brand-dark text-xs font-bold uppercase tracking-widest mb-2">Message</label>
                 <textarea 
+                  name="message"
                   rows={4}
-                  className="w-full bg-brand-light border border-brand-gray/20 p-4 focus:outline-none focus:border-brand-orange transition-colors"
+                  className="w-full bg-white border border-brand-gray/20 p-4 focus:outline-none focus:border-brand-orange transition-colors"
                   placeholder="Tell us about your project..."
                 ></textarea>
               </div>
@@ -502,7 +562,7 @@ const Contact = () => {
 
 const Footer = () => {
   return (
-    <footer className="bg-brand-dark border-t border-brand-gray-dark pt-20 pb-10">
+    <footer className="bg-brand-light border-t border-brand-gray/40 pt-20 pb-10 text-brand-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-4 gap-12 mb-16">
           <div className="col-span-2">
@@ -510,7 +570,7 @@ const Footer = () => {
               <div className="bg-brand-orange p-1.5 rounded">
                 <Fence className="text-white w-6 h-6" />
               </div>
-              <span className="text-2xl font-bold tracking-tighter text-white">
+              <span className="text-2xl font-bold tracking-tighter">
                 CFM <span className="text-brand-orange">FENCE SOLUTIONS</span>
               </span>
             </div>
@@ -527,12 +587,18 @@ const Footer = () => {
           </div>
 
           <div>
-            <h4 className="text-white font-bold uppercase tracking-widest text-sm mb-6">Quick Links</h4>
+            <h4 className="text-brand-dark font-bold uppercase tracking-widest text-sm mb-6">Quick Links</h4>
             <ul className="space-y-4">
-              {['Home', 'Services', 'About', 'Gallery', 'Contact'].map((link) => (
-                <li key={link}>
-                  <a href={`#${link.toLowerCase()}`} className="text-brand-gray hover:text-brand-orange transition-colors text-sm">
-                    {link}
+              {[
+                { name: 'Home', href: '#home' },
+                { name: 'Services', href: '#services' },
+                { name: 'Our Story', href: '#our-story' },
+                { name: 'Gallery', href: '#gallery' },
+                { name: 'Contact', href: '#contact' },
+              ].map((link) => (
+                <li key={link.name}>
+                  <a href={link.href} className="text-brand-gray hover:text-brand-orange transition-colors text-sm">
+                    {link.name}
                   </a>
                 </li>
               ))}
@@ -540,7 +606,7 @@ const Footer = () => {
           </div>
 
           <div>
-            <h4 className="text-white font-bold uppercase tracking-widest text-sm mb-6">Services</h4>
+            <h4 className="text-brand-dark font-bold uppercase tracking-widest text-sm mb-6">Services</h4>
             <ul className="space-y-4">
               {['Residential', 'Commercial', 'Industrial', 'Security Gates', 'Repairs'].map((service) => (
                 <li key={service}>
@@ -553,7 +619,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-brand-gray-dark pt-8 flex flex-col md:row justify-between items-center text-brand-gray text-xs uppercase tracking-widest font-bold">
+        <div className="border-t border-brand-gray/40 pt-8 flex flex-col md:row justify-between items-center text-brand-gray text-xs uppercase tracking-widest font-bold">
           <p>© {new Date().getFullYear()} CFM Fence Solutions. All Rights Reserved.</p>
           <div className="flex space-x-8 mt-4 md:mt-0">
             <a href="#" className="hover:text-brand-orange transition-colors">Privacy Policy</a>
@@ -613,7 +679,7 @@ export default function App() {
       <main>
         <Hero />
         <Services />
-        <About />
+        <OurStory />
         <Gallery />
         <Contact />
       </main>
