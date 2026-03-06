@@ -215,17 +215,23 @@ const Hero = () => {
 
 const SERVICES_INCLUDING = [
   { title: 'Custom Gates', subtitle: 'Driveway, pedestrian & automated', image: '/images/customgates.JPEG' },
-  { title: 'Hand/Stair Railings', subtitle: 'Indoor & outdoor, custom fit', image: '/images/stair-1.jpeg' },
+  {
+    title: 'Hand/Stair Railings',
+    subtitle: 'Indoor & outdoor, custom fit',
+    image: '/images/stair-1.jpeg',
+    images: ['/images/stair-1.jpeg', '/images/stair-2.jpeg', '/images/stair-3.jpeg'],
+  },
   { title: 'Mailboxes', subtitle: 'Wood, granite and PVC', image: '/images/mailbox1.JPEG' },
   { title: 'Wood/Steel Guard Rail', subtitle: 'Decks, porches & safety rails', image: '/images/proj-5.jpeg' },
 ];
 
 const Services = () => {
-  const [servicesLightboxIndex, setServicesLightboxIndex] = useState<number | null>(null);
+  const [servicesLightboxItemIndex, setServicesLightboxItemIndex] = useState<number | null>(null);
+  const [servicesLightboxImageIndex, setServicesLightboxImageIndex] = useState(0);
   const [servicesSlideDir, setServicesSlideDir] = useState(0);
   const servicesTouchStartX = useRef<number | null>(null);
   const servicesDidSwipe = useRef(false);
-  const servicesPrevLightboxIndex = useRef<number | null>(null);
+  const servicesPrevImageIndex = useRef<number | null>(null);
 
   const services = [
     {
@@ -250,29 +256,38 @@ const Services = () => {
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setServicesLightboxIndex(null);
+      if (e.key === 'Escape') setServicesLightboxItemIndex(null);
     };
-    if (servicesLightboxIndex !== null) {
-      if (servicesPrevLightboxIndex.current === null) setServicesSlideDir(0);
-      servicesPrevLightboxIndex.current = servicesLightboxIndex;
+    if (servicesLightboxItemIndex !== null) {
+      const justOpened = servicesPrevImageIndex.current === null;
+      if (justOpened) setServicesSlideDir(0);
+      servicesPrevImageIndex.current = servicesLightboxImageIndex;
       document.body.style.overflow = 'hidden';
       window.addEventListener('keydown', handleEscape);
     } else {
-      servicesPrevLightboxIndex.current = null;
+      servicesPrevImageIndex.current = null;
     }
     return () => {
       document.body.style.overflow = '';
       window.removeEventListener('keydown', handleEscape);
     };
-  }, [servicesLightboxIndex]);
+  }, [servicesLightboxItemIndex, servicesLightboxImageIndex]);
+
+  const getCurrentLightboxImages = () => {
+    if (servicesLightboxItemIndex === null) return [];
+    const item = SERVICES_INCLUDING[servicesLightboxItemIndex] as { image: string; images?: string[] };
+    return item.images ?? [item.image];
+  };
+
+  const currentLightboxImages = getCurrentLightboxImages();
 
   const servicesGoPrev = () => {
     setServicesSlideDir(-1);
-    setServicesLightboxIndex((i) => (i === null ? null : i === 0 ? SERVICES_INCLUDING.length - 1 : i - 1));
+    setServicesLightboxImageIndex((j) => (j === 0 ? currentLightboxImages.length - 1 : j - 1));
   };
   const servicesGoNext = () => {
     setServicesSlideDir(1);
-    setServicesLightboxIndex((i) => (i === null ? null : i === SERVICES_INCLUDING.length - 1 ? 0 : i + 1));
+    setServicesLightboxImageIndex((j) => (j === currentLightboxImages.length - 1 ? 0 : j + 1));
   };
   const servicesHandleTouchStart = (e: React.TouchEvent) => {
     servicesTouchStartX.current = e.touches[0].clientX;
@@ -298,7 +313,12 @@ const Services = () => {
       servicesDidSwipe.current = false;
       return;
     }
-    setServicesLightboxIndex(null);
+    setServicesLightboxItemIndex(null);
+  };
+
+  const openServicesLightbox = (itemIndex: number) => {
+    setServicesLightboxItemIndex(itemIndex);
+    setServicesLightboxImageIndex(0);
   };
 
   return (
@@ -333,7 +353,7 @@ const Services = () => {
                   {service.description}
                 </p>
                 <a href="#contact" className="text-brand-orange font-bold text-xs uppercase tracking-widest flex items-center group">
-                  Learn More
+                  View More
                   <ChevronRight className="ml-1 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </a>
               </div>
@@ -353,10 +373,10 @@ const Services = () => {
                 key={i}
                 whileHover={{ y: -10 }}
                 className="bg-white border border-brand-gray/20 overflow-hidden shadow-sm group cursor-pointer"
-                onClick={() => setServicesLightboxIndex(i)}
+                onClick={() => openServicesLightbox(i)}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && setServicesLightboxIndex(i)}
+                onKeyDown={(e) => e.key === 'Enter' && openServicesLightbox(i)}
                 aria-label={`View ${item.title} full size`}
               >
                 <div className="h-40 overflow-hidden relative">
@@ -379,7 +399,7 @@ const Services = () => {
                     <p className="text-brand-gray-dark text-sm mt-1">{item.subtitle}</p>
                   )}
                   <a href="#contact" className="inline-flex items-center mt-4 text-brand-orange font-bold text-xs uppercase tracking-widest" onClick={(e) => e.stopPropagation()}>
-                    Learn More
+                    View More
                     <ChevronRight className="ml-1 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </a>
                 </div>
@@ -391,7 +411,7 @@ const Services = () => {
 
       {/* Services including – fullscreen lightbox */}
       <AnimatePresence>
-        {servicesLightboxIndex !== null && (
+        {servicesLightboxItemIndex !== null && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -405,7 +425,7 @@ const Services = () => {
           >
             <button
               type="button"
-              onClick={() => setServicesLightboxIndex(null)}
+              onClick={() => setServicesLightboxItemIndex(null)}
               className="absolute top-4 right-4 z-10 p-2 text-white hover:text-brand-orange transition-colors rounded-full hover:bg-white/10"
               aria-label="Close"
             >
@@ -429,7 +449,7 @@ const Services = () => {
             </button>
             <AnimatePresence initial={false} mode="sync">
               <motion.div
-                key={servicesLightboxIndex}
+                key={servicesLightboxImageIndex}
                 initial={{
                   x: servicesSlideDir === 0 ? 0 : servicesSlideDir > 0 ? '100vw' : '-100vw',
                   opacity: servicesSlideDir === 0 ? 1 : 1,
@@ -448,8 +468,8 @@ const Services = () => {
               >
                 <div className="max-w-[90vw] max-h-[90vh] flex items-center justify-center">
                   <img
-                    src={SERVICES_INCLUDING[servicesLightboxIndex].image}
-                    alt={SERVICES_INCLUDING[servicesLightboxIndex].title}
+                    src={currentLightboxImages[servicesLightboxImageIndex]}
+                    alt={SERVICES_INCLUDING[servicesLightboxItemIndex].title}
                     className="max-w-full max-h-[90vh] w-auto h-auto object-contain select-none"
                     referrerPolicy="no-referrer"
                     draggable={false}
@@ -458,7 +478,7 @@ const Services = () => {
               </motion.div>
             </AnimatePresence>
             <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/80 text-sm">
-              {servicesLightboxIndex + 1} / {SERVICES_INCLUDING.length}
+              {servicesLightboxImageIndex + 1} / {currentLightboxImages.length}
             </p>
           </motion.div>
         )}
