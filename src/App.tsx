@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Select from 'react-select';
 import { 
   Fence, 
@@ -9,7 +9,8 @@ import {
   MapPin, 
   Menu, 
   X, 
-  ChevronRight, 
+  ChevronRight,
+  ChevronLeft, 
   Star,
   CheckCircle2,
   Construction,
@@ -282,9 +283,9 @@ const Services = () => {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { title: 'Custom Gates', subtitle: 'Driveway, pedestrian & automated', image: '/images/proj-1.jpg' },
-              { title: 'Hand/Stair Railings', subtitle: 'Indoor & outdoor, custom fit', image: '/images/proj-3.jpg' },
-              { title: 'Mailboxes', subtitle: 'Wood, granite and PVC', image: '/images/proj-4.jpg' },
+              { title: 'Custom Gates', subtitle: 'Driveway, pedestrian & automated', image: '/images/customgates.JPEG' },
+              { title: 'Hand/Stair Railings', subtitle: 'Indoor & outdoor, custom fit', image: '/images/handrailing.JPEG' },
+              { title: 'Mailboxes', subtitle: 'Wood, granite and PVC', image: '/images/mailbox1.JPEG' },
               { title: 'Wood/Steel Guard Rail', subtitle: 'Decks, porches & safety rails', image: '/images/proj-5.jpeg' },
             ].map((item, i) => (
               <motion.div
@@ -369,15 +370,86 @@ const OurStory = () => {
   );
 };
 
+const SWIPE_THRESHOLD = 50;
+
 const Gallery = () => {
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [slideDir, setSlideDir] = useState(0);
+  const touchStartX = useRef<number | null>(null);
+  const didSwipe = useRef(false);
   const images = [
+    '/images/proj-1.JPEG',
     '/images/proj-2.jpg',
     '/images/proj-3.jpg',
+    '/images/stair.JPEG',
     '/images/proj-5.jpeg',
+    '/images/proj-6.jpg',
     '/images/proj-7.jpg',
+    '/images/proj-14.JPEG',
     '/images/proj-9.jpg',
-    '/images/proj-8.jpeg',
+    '/images/customgates.JPEG',
+    '/images/handrailing.JPEG',
+    '/images/mailbox.JPEG',
+    '/images/proj-10.JPEG',
+    '/images/proj-11.JPEG',
+    '/images/proj-12.JPEG',
+    '/images/proj-13.JPEG',
   ];
+
+  const prevLightboxIndex = useRef<number | null>(null);
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setLightboxIndex(null);
+    };
+    if (lightboxIndex !== null) {
+      if (prevLightboxIndex.current === null) setSlideDir(0);
+      prevLightboxIndex.current = lightboxIndex;
+      document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleEscape);
+    } else {
+      prevLightboxIndex.current = null;
+    }
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [lightboxIndex]);
+
+  const goPrev = () => {
+    setSlideDir(-1);
+    setLightboxIndex((i) => (i === null ? null : i === 0 ? images.length - 1 : i - 1));
+  };
+  const goNext = () => {
+    setSlideDir(1);
+    setLightboxIndex((i) => (i === null ? null : i === images.length - 1 ? 0 : i + 1));
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    didSwipe.current = false;
+  };
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const x = e.touches[0].clientX;
+    const diff = touchStartX.current - x;
+    if (Math.abs(diff) > SWIPE_THRESHOLD) didSwipe.current = true;
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const endX = e.changedTouches[0].clientX;
+    const diff = touchStartX.current - endX;
+    touchStartX.current = null;
+    if (Math.abs(diff) < SWIPE_THRESHOLD) return;
+    if (diff > 0) goNext();
+    else goPrev();
+  };
+  const handleBackdropClick = () => {
+    if (didSwipe.current) {
+      didSwipe.current = false;
+      return;
+    }
+    setLightboxIndex(null);
+  };
 
   return (
     <section id="gallery" className="py-24 bg-brand-light scroll-mt-32">
@@ -388,12 +460,18 @@ const Gallery = () => {
           <div className="w-20 h-1.5 bg-brand-orange mx-auto mt-4"></div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {/* 2 cols mobile (vertical scroll), 3 tablet, 4 desktop */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {images.map((img, i) => (
             <motion.div
               key={i}
               whileHover={{ scale: 1.02 }}
               className="aspect-square overflow-hidden relative group cursor-pointer"
+              onClick={() => setLightboxIndex(i)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === 'Enter' && setLightboxIndex(i)}
+              aria-label={`View project ${i + 1}`}
             >
               <img
                 src={img}
@@ -401,13 +479,91 @@ const Gallery = () => {
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 referrerPolicy="no-referrer"
               />
-              <div className="absolute inset-0 bg-brand-orange/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <span className="text-white font-bold uppercase tracking-widest text-sm border-2 border-white px-4 py-2">View Project</span>
+              <div className="absolute inset-0 bg-brand-orange/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                <span className="text-white font-bold uppercase tracking-widest text-sm border-2 border-white px-4 py-2">View full size</span>
               </div>
             </motion.div>
           ))}
         </div>
       </div>
+
+      {/* Fullscreen lightbox */}
+      <AnimatePresence>
+        {lightboxIndex !== null && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 touch-none"
+            onClick={handleBackdropClick}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            <button
+              type="button"
+              onClick={() => setLightboxIndex(null)}
+              className="absolute top-4 right-4 z-10 p-2 text-white hover:text-brand-orange transition-colors rounded-full hover:bg-white/10"
+              aria-label="Close"
+            >
+              <X className="w-8 h-8" />
+            </button>
+
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); goPrev(); }}
+              className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-10 p-2 text-white hover:text-brand-orange transition-colors rounded-full hover:bg-white/10"
+              aria-label="Previous image"
+            >
+              <ChevronLeft className="w-8 h-8 sm:w-10 sm:h-10" />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); goNext(); }}
+              className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-10 p-2 text-white hover:text-brand-orange transition-colors rounded-full hover:bg-white/10"
+              aria-label="Next image"
+            >
+              <ChevronRight className="w-8 h-8 sm:w-10 sm:h-10" />
+            </button>
+
+            <AnimatePresence initial={false} mode="sync">
+              <motion.div
+                key={lightboxIndex}
+                initial={{
+                  x: slideDir === 0 ? 0 : slideDir > 0 ? '100vw' : '-100vw',
+                  opacity: slideDir === 0 ? 1 : 1,
+                }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{
+                  x: slideDir === 0 ? 0 : slideDir > 0 ? '-100vw' : '100vw',
+                  opacity: 1,
+                }}
+                transition={{
+                  type: 'tween',
+                  duration: 0.35,
+                  ease: [0.25, 0.1, 0.25, 1],
+                }}
+                className="absolute inset-0 flex items-center justify-center pointer-events-none"
+              >
+                <div className="max-w-[90vw] max-h-[90vh] flex items-center justify-center">
+                  <img
+                    src={images[lightboxIndex]}
+                    alt={`Project ${lightboxIndex + 1}`}
+                    className="max-w-full max-h-[90vh] w-auto h-auto object-contain select-none"
+                    referrerPolicy="no-referrer"
+                    draggable={false}
+                  />
+                </div>
+              </motion.div>
+            </AnimatePresence>
+
+            <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/80 text-sm">
+              {lightboxIndex + 1} / {images.length}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 };
@@ -587,9 +743,9 @@ const Footer = () => {
   return (
     <footer className="bg-brand-light border-t border-brand-gray/40 pt-20 pb-10 text-brand-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid md:grid-cols-4 gap-12 mb-16">
-          <div className="col-span-2">
-            <div className="flex items-center space-x-2 mb-6">
+        <div className="grid md:grid-cols-4 gap-12 mb-16 text-center md:text-left">
+          <div className="col-span-2 flex flex-col items-center md:items-start">
+            <div className="flex items-center justify-center md:justify-start mb-6">
               <a href="#home" className="flex items-center">
                 <img
                   src="/images/logo.png"
@@ -601,7 +757,7 @@ const Footer = () => {
             <p className="text-brand-gray max-w-sm mb-8">
               Providing premium fencing solutions with industrial strength and residential elegance. Your security is our commitment.
             </p>
-            <div className="flex space-x-4">
+            <div className="flex justify-center md:justify-start space-x-4">
               {['FB', 'TW', 'IG', 'LI'].map((social) => (
                 <a key={social} href="#" className="w-10 h-10 bg-brand-gray-dark flex items-center justify-center text-brand-light hover:bg-brand-orange hover:text-white transition-all font-bold text-xs">
                   {social}
@@ -610,7 +766,7 @@ const Footer = () => {
             </div>
           </div>
 
-          <div>
+          <div className="flex flex-col items-center md:items-start">
             <h4 className="text-brand-dark font-bold uppercase tracking-widest text-sm mb-6">Quick Links</h4>
             <ul className="space-y-4">
               {[
@@ -629,7 +785,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          <div>
+          <div className="flex flex-col items-center md:items-start">
             <h4 className="text-brand-dark font-bold uppercase tracking-widest text-sm mb-6">Services</h4>
             <ul className="space-y-4">
               {['Residential', 'Commercial', 'Industrial', 'Security Gates', 'Repairs'].map((service) => (
@@ -643,9 +799,9 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-brand-gray/40 pt-8 flex flex-col md:row justify-between items-center text-brand-gray text-xs uppercase tracking-widest font-bold">
+        <div className="border-t border-brand-gray/40 pt-8 flex flex-col md:flex-row justify-between items-center text-center md:text-left text-brand-gray text-xs uppercase tracking-widest font-bold">
           <p>© {new Date().getFullYear()} CFM Fence Solutions. All Rights Reserved.</p>
-          <div className="flex space-x-8 mt-4 md:mt-0">
+          <div className="flex flex-wrap justify-center gap-x-8 gap-y-2 mt-4 md:mt-0">
             <a href="#" className="hover:text-brand-orange transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-brand-orange transition-colors">Terms of Service</a>
           </div>
