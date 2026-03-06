@@ -46,7 +46,7 @@ const Navbar = () => {
           <div className="flex items-center space-x-2">
             <a href="#home" className="flex items-center">
               <img
-                src="/logo.png"
+                src="/images/logo.png"
                 alt="CFM Fence Solutions"
                 className="h-10 w-auto"
               />
@@ -124,11 +124,11 @@ const Navbar = () => {
 
 const Hero = () => {
   return (
-    <section id="home" className="relative min-h-screen lg:h-screen flex items-center overflow-hidden bg-brand-light pb-32 lg:pb-0 scroll-mt-32">
+    <section id="home" className="relative min-h-screen lg:min-h-0 lg:h-screen flex flex-col overflow-hidden bg-brand-light scroll-mt-32">
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
         <img
-          src="/hero-1.png"
+          src="/images/hero-1.png"
           alt="Modern outdoor fence in front of house"
           className="w-full h-full object-cover opacity-40"
           referrerPolicy="no-referrer"
@@ -136,56 +136,73 @@ const Hero = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent"></div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
-        <motion.div
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8 }}
-          className="max-w-2xl"
-        >
-          <div className="inline-flex items-center space-x-2 bg-brand-orange/20 border border-brand-orange/30 px-3 py-1 rounded-full mb-6">
-            <ShieldCheck className="w-4 h-4 text-brand-orange" />
-            <span className="text-brand-orange text-xs font-bold uppercase tracking-widest">Premium Quality Guaranteed</span>
-          </div>
-          <h1 className="text-4xl md:text-7xl font-black text-brand-dark leading-tight mb-6 uppercase tracking-tighter">
-            SECURE YOUR <br />
-            <span className="text-brand-orange">BOUNDARY</span> WITH <br />
-            PRECISION
-          </h1>
-          <p className="text-brand-gray text-lg mb-10 max-w-lg">
-            CFM Fence Solutions provides industrial-grade fencing for residential, commercial, and high-security properties. Built to last, designed for strength.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <a
-              href="#services"
-              className="bg-brand-orange text-white px-8 py-4 rounded-sm font-bold hover:bg-orange-600 transition-all flex items-center justify-center group"
-            >
-              Explore Services
-              <ChevronRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </a>
-            <a
-              href="#gallery"
-              className="bg-brand-dark/80 text-white px-8 py-4 rounded-sm font-bold hover:bg-brand-dark transition-all flex items-center justify-center"
-            >
-              View Our Work
-            </a>
-          </div>
-        </motion.div>
+      {/* Main content: takes remaining space, content centered */}
+      <div className="relative z-10 flex-1 flex items-center min-h-0">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-8 w-full">
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+            className="max-w-2xl"
+          >
+            <div className="inline-flex items-center space-x-2 bg-brand-orange/20 border border-brand-orange/30 px-3 py-1 rounded-full mb-6">
+              <ShieldCheck className="w-4 h-4 text-brand-orange" />
+              <span className="text-brand-orange text-xs font-bold uppercase tracking-widest">Premium Quality Guaranteed</span>
+            </div>
+            <h1 className="text-4xl md:text-7xl font-black text-brand-dark leading-tight mb-6 uppercase tracking-tighter">
+              SECURE YOUR <br />
+              <span className="text-brand-orange">BOUNDARY</span> WITH <br />
+              PRECISION
+            </h1>
+            <p className="text-brand-gray text-lg mb-10 max-w-lg">
+              CFM Fence Solutions delivers high-quality residential and commercial fencing built for durability, security, and curb appeal. As a family-owned business, we take pride in craftsmanship, reliability, and attention to detail in every project we complete.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <a
+                href="#services"
+                className="bg-brand-orange text-white px-8 py-4 rounded-sm font-bold hover:bg-orange-600 transition-all flex items-center justify-center group"
+              >
+                Explore Services
+                <ChevronRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </a>
+              <a
+                href="#gallery"
+                className="bg-brand-dark/80 text-white px-8 py-4 rounded-sm font-bold hover:bg-brand-dark transition-all flex items-center justify-center"
+              >
+                View Our Work
+              </a>
+            </div>
+          </motion.div>
+        </div>
       </div>
 
-      {/* Stats Overlay */}
-      <div className="absolute bottom-0 left-0 right-0 bg-brand-light/90 border-t border-brand-gray/40 py-6 lg:py-8">
+      {/* Stats bar: in flow so it never overlaps content */}
+      <div className="relative z-10 shrink-0 bg-brand-light/95 py-10 lg:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-4">
             {[
-              { label: 'Years Experience', value: '15+' },
-              { label: 'Projects Completed', value: '2.5k' },
-              { label: 'Expert Installers', value: '40+' },
-              { label: 'Client Satisfaction', value: '100%' },
+              { value: '15+', label: 'Years Experience' },
+              { value: '100+', label: 'Client Satisfaction' },
+              { value: null, label: 'Family Owned & Operated' },
+              { value: null, label: 'Residential & Commercial Projects' },
+              
             ].map((stat, i) => (
-              <div key={i} className="flex flex-col items-center lg:items-start text-center lg:text-left">
-                <span className="text-brand-orange text-2xl lg:text-3xl font-black">{stat.value}</span>
-                <span className="text-brand-gray text-[10px] lg:text-xs uppercase tracking-widest font-bold">{stat.label}</span>
+              <div
+                key={i}
+                className={`flex flex-col items-center text-center justify-center min-h-[3.5rem] lg:min-h-0 ${
+                  i > 0 && i < 4 ? 'lg:border-l border-brand-gray/30' : ''
+                }`}
+              >
+                {stat.value ? (
+                  <>
+                    <span className="text-brand-orange text-2xl sm:text-3xl font-black block">{stat.value}</span>
+                    <span className="text-brand-gray text-[10px] sm:text-xs uppercase tracking-widest font-bold mt-1">{stat.label}</span>
+                  </>
+                ) : (
+                  <span className="text-brand-orange text-sm sm:text-base lg:text-lg font-black uppercase tracking-tight leading-snug max-w-[12rem] lg:max-w-none">
+                    {stat.label}
+                  </span>
+                )}
               </div>
             ))}
           </div>
@@ -201,24 +218,24 @@ const Services = () => {
       title: 'Residential Fencing',
       description: 'Enhance your home\'s curb appeal and security with our wide range of wood, vinyl, and ornamental iron fences.',
       icon: <Home className="w-8 h-8" />,
-      image: '/proj-2.jpg'
+      image: '/images/proj-2.jpg'
     },
     {
       title: 'Commercial Solutions',
       description: 'Durable and professional fencing for businesses, warehouses, and industrial sites. Security is our priority.',
       icon: <Building2 className="w-8 h-8" />,
-      image: '/proj-7.jpg'
+      image: '/images/proj-7.jpg'
     },
     {
       title: 'Industrial & Security',
       description: 'High-security chain link, barbed wire, and automated gate systems for maximum protection of your assets.',
       icon: <Construction className="w-8 h-8" />,
-      image: '/proj-6.jpg'
+      image: '/images/proj-6.jpg'
     }
   ];
 
   return (
-    <section id="services" className="py-24 bg-brand-light scroll-mt-32">
+    <section id="services" className="pt-20 sm:pt-28 lg:pt-36 pb-24 bg-brand-light scroll-mt-32">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-brand-orange font-bold uppercase tracking-widest text-sm mb-2">What We Do</h2>
@@ -265,10 +282,10 @@ const Services = () => {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { title: 'Custom Gates', subtitle: 'Driveway, pedestrian & automated', image: '/proj-1.jpg' },
-              { title: 'Hand/Stair Railings', subtitle: 'Indoor & outdoor, custom fit', image: '/proj-3.jpg' },
-              { title: 'Mailboxes', subtitle: 'Wood, granite and PVC', image: '/proj-4.jpg' },
-              { title: 'Wood/Steel Guard Rail', subtitle: 'Decks, porches & safety rails', image: '/proj-5.jpg' },
+              { title: 'Custom Gates', subtitle: 'Driveway, pedestrian & automated', image: '/images/proj-1.jpg' },
+              { title: 'Hand/Stair Railings', subtitle: 'Indoor & outdoor, custom fit', image: '/images/proj-3.jpg' },
+              { title: 'Mailboxes', subtitle: 'Wood, granite and PVC', image: '/images/proj-4.jpg' },
+              { title: 'Wood/Steel Guard Rail', subtitle: 'Decks, porches & safety rails', image: '/images/proj-5.jpeg' },
             ].map((item, i) => (
               <motion.div
                 key={i}
@@ -318,7 +335,7 @@ const OurStory = () => {
               className="relative z-10"
             >
               <img
-                src="/portrait.png"
+                src="/images/portrait.png"
                 alt="Our Team"
                 className="rounded-sm shadow-2xl grayscale hover:grayscale-0 transition-all duration-700"
               />
@@ -331,13 +348,19 @@ const OurStory = () => {
             <h2 className="text-brand-orange font-bold uppercase tracking-widest text-sm mb-2">Our Story</h2>
             <h3 className="text-4xl md:text-5xl font-black text-brand-dark uppercase tracking-tighter mb-6">The Family Behind CFM</h3>
             <p className="text-brand-gray-dark text-lg mb-6">
-              CFM Fence Solutions was founded by Chris with a vision of building more than just fences — but a business rooted in family, integrity, and craftsmanship. The name CFM represents more than initials; it stands for Chris, his wife Francine, and their daughter Maileena — the true foundation and inspiration behind the company.
+              CFM Fence Solutions &mdash; Leominster
             </p>
             <p className="text-brand-gray-dark text-lg mb-6">
-              Built on hard work, dedication, and attention to detail, CFM Fence Solutions was created to provide high-quality, custom fencing solutions that protect and enhance the homes of families in our community. Every project we complete reflects the same care, precision, and pride we would expect for our own home.
+              At CFM Fence Solutions, fencing is more than just our trade &mdash; it&apos;s our passion and our promise to the community. Founded by Chris, who brings years of hands-on experience in fence installation and repair, our company was built with a vision of creating more than just strong, beautiful fences. We set out to build a business grounded in family values, integrity, and true craftsmanship.
+            </p>
+            <p className="text-brand-gray-dark text-lg mb-6">
+              The name CFM represents Chris, his wife Francine, and their daughter Maileena &mdash; the heart and inspiration behind everything we do. As a family-owned and operated business, we understand the importance of protecting what matters most.
+            </p>
+            <p className="text-brand-gray-dark text-lg mb-6">
+              We specialize in high-quality, custom fencing solutions including vinyl, wood, chain link, ornamental fencing, and custom gates. We also offer guard rails, hand railings, stair railings, and fence repairs. Every project is completed with careful attention to detail, premium materials, and a commitment to lasting durability.
             </p>
             <p className="text-brand-gray-dark text-lg">
-              At CFM Fence Solutions, we don&apos;t just build fences — we build trust, security, and lasting relationships.
+              Our goal is simple: to provide dependable service, honest communication, and results that exceed expectations. When you choose CFM Fence Solutions, you&apos;re not just hiring a contractor &mdash; you&apos;re partnering with a local family that takes pride in securing and enhancing your home. We don&apos;t just build fences &mdash; we build trust, security, and lasting relationships.
             </p>
           </div>
         </div>
@@ -348,12 +371,12 @@ const OurStory = () => {
 
 const Gallery = () => {
   const images = [
-    '/proj-2.jpg',
-    '/proj-3.jpg',
-    '/proj-5.jpg',
-    '/proj-7.jpg',
-    '/proj-9.jpg',
-    '/proj-8.jpg',
+    '/images/proj-2.jpg',
+    '/images/proj-3.jpg',
+    '/images/proj-5.jpeg',
+    '/images/proj-7.jpg',
+    '/images/proj-9.jpg',
+    '/images/proj-8.jpeg',
   ];
 
   return (
@@ -569,7 +592,7 @@ const Footer = () => {
             <div className="flex items-center space-x-2 mb-6">
               <a href="#home" className="flex items-center">
                 <img
-                  src="/logo.png"
+                  src="/images/logo.png"
                   alt="CFM Fence Solutions"
                   className="h-10 w-auto"
                 />
