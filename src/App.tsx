@@ -284,7 +284,7 @@ const Services = () => {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
               { title: 'Custom Gates', subtitle: 'Driveway, pedestrian & automated', image: '/images/customgates.JPEG' },
-              { title: 'Hand/Stair Railings', subtitle: 'Indoor & outdoor, custom fit', image: '/images/handrailing.JPEG' },
+              { title: 'Hand/Stair Railings', subtitle: 'Indoor & outdoor, custom fit', image: '/images/stair-1.jpeg' },
               { title: 'Mailboxes', subtitle: 'Wood, granite and PVC', image: '/images/mailbox1.JPEG' },
               { title: 'Wood/Steel Guard Rail', subtitle: 'Decks, porches & safety rails', image: '/images/proj-5.jpeg' },
             ].map((item, i) => (
