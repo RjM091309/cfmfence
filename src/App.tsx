@@ -213,7 +213,20 @@ const Hero = () => {
   );
 };
 
+const SERVICES_INCLUDING = [
+  { title: 'Custom Gates', subtitle: 'Driveway, pedestrian & automated', image: '/images/customgates.JPEG' },
+  { title: 'Hand/Stair Railings', subtitle: 'Indoor & outdoor, custom fit', image: '/images/stair-1.jpeg' },
+  { title: 'Mailboxes', subtitle: 'Wood, granite and PVC', image: '/images/mailbox1.JPEG' },
+  { title: 'Wood/Steel Guard Rail', subtitle: 'Decks, porches & safety rails', image: '/images/proj-5.jpeg' },
+];
+
 const Services = () => {
+  const [servicesLightboxIndex, setServicesLightboxIndex] = useState<number | null>(null);
+  const [servicesSlideDir, setServicesSlideDir] = useState(0);
+  const servicesTouchStartX = useRef<number | null>(null);
+  const servicesDidSwipe = useRef(false);
+  const servicesPrevLightboxIndex = useRef<number | null>(null);
+
   const services = [
     {
       title: 'Residential Fencing',
@@ -234,6 +247,59 @@ const Services = () => {
       image: '/images/proj-6.jpg'
     }
   ];
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setServicesLightboxIndex(null);
+    };
+    if (servicesLightboxIndex !== null) {
+      if (servicesPrevLightboxIndex.current === null) setServicesSlideDir(0);
+      servicesPrevLightboxIndex.current = servicesLightboxIndex;
+      document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleEscape);
+    } else {
+      servicesPrevLightboxIndex.current = null;
+    }
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [servicesLightboxIndex]);
+
+  const servicesGoPrev = () => {
+    setServicesSlideDir(-1);
+    setServicesLightboxIndex((i) => (i === null ? null : i === 0 ? SERVICES_INCLUDING.length - 1 : i - 1));
+  };
+  const servicesGoNext = () => {
+    setServicesSlideDir(1);
+    setServicesLightboxIndex((i) => (i === null ? null : i === SERVICES_INCLUDING.length - 1 ? 0 : i + 1));
+  };
+  const servicesHandleTouchStart = (e: React.TouchEvent) => {
+    servicesTouchStartX.current = e.touches[0].clientX;
+    servicesDidSwipe.current = false;
+  };
+  const servicesHandleTouchMove = (e: React.TouchEvent) => {
+    if (servicesTouchStartX.current === null) return;
+    const x = e.touches[0].clientX;
+    const diff = servicesTouchStartX.current - x;
+    if (Math.abs(diff) > 50) servicesDidSwipe.current = true;
+  };
+  const servicesHandleTouchEnd = (e: React.TouchEvent) => {
+    if (servicesTouchStartX.current === null) return;
+    const endX = e.changedTouches[0].clientX;
+    const diff = servicesTouchStartX.current - endX;
+    servicesTouchStartX.current = null;
+    if (Math.abs(diff) < 50) return;
+    if (diff > 0) servicesGoNext();
+    else servicesGoPrev();
+  };
+  const servicesHandleBackdropClick = () => {
+    if (servicesDidSwipe.current) {
+      servicesDidSwipe.current = false;
+      return;
+    }
+    setServicesLightboxIndex(null);
+  };
 
   return (
     <section id="services" className="pt-20 sm:pt-28 lg:pt-36 pb-24 bg-brand-light scroll-mt-32">
@@ -282,16 +348,16 @@ const Services = () => {
             <div className="w-20 h-1.5 bg-brand-orange mx-auto mt-4"></div>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              { title: 'Custom Gates', subtitle: 'Driveway, pedestrian & automated', image: '/images/customgates.JPEG' },
-              { title: 'Hand/Stair Railings', subtitle: 'Indoor & outdoor, custom fit', image: '/images/stair-1.jpeg' },
-              { title: 'Mailboxes', subtitle: 'Wood, granite and PVC', image: '/images/mailbox1.JPEG' },
-              { title: 'Wood/Steel Guard Rail', subtitle: 'Decks, porches & safety rails', image: '/images/proj-5.jpeg' },
-            ].map((item, i) => (
+            {SERVICES_INCLUDING.map((item, i) => (
               <motion.div
                 key={i}
                 whileHover={{ y: -10 }}
-                className="bg-white border border-brand-gray/20 overflow-hidden shadow-sm group"
+                className="bg-white border border-brand-gray/20 overflow-hidden shadow-sm group cursor-pointer"
+                onClick={() => setServicesLightboxIndex(i)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && setServicesLightboxIndex(i)}
+                aria-label={`View ${item.title} full size`}
               >
                 <div className="h-40 overflow-hidden relative">
                   <img
@@ -301,6 +367,9 @@ const Services = () => {
                     referrerPolicy="no-referrer"
                   />
                   <div className="absolute inset-0 bg-brand-dark/20 group-hover:bg-brand-dark/0 transition-colors"></div>
+                  <div className="absolute inset-0 bg-brand-orange/80 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex items-center justify-center pointer-events-none">
+                    <span className="text-white font-bold uppercase tracking-widest text-sm border-2 border-white px-4 py-2">View full size</span>
+                  </div>
                 </div>
                 <div className="p-6">
                   <h4 className="text-lg font-bold text-brand-dark uppercase tracking-tight">
@@ -309,7 +378,7 @@ const Services = () => {
                   {item.subtitle && (
                     <p className="text-brand-gray-dark text-sm mt-1">{item.subtitle}</p>
                   )}
-                  <a href="#contact" className="inline-flex items-center mt-4 text-brand-orange font-bold text-xs uppercase tracking-widest">
+                  <a href="#contact" className="inline-flex items-center mt-4 text-brand-orange font-bold text-xs uppercase tracking-widest" onClick={(e) => e.stopPropagation()}>
                     Learn More
                     <ChevronRight className="ml-1 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </a>
@@ -319,6 +388,81 @@ const Services = () => {
           </div>
         </div>
       </div>
+
+      {/* Services including – fullscreen lightbox */}
+      <AnimatePresence>
+        {servicesLightboxIndex !== null && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 touch-none"
+            onClick={servicesHandleBackdropClick}
+            onTouchStart={servicesHandleTouchStart}
+            onTouchMove={servicesHandleTouchMove}
+            onTouchEnd={servicesHandleTouchEnd}
+          >
+            <button
+              type="button"
+              onClick={() => setServicesLightboxIndex(null)}
+              className="absolute top-4 right-4 z-10 p-2 text-white hover:text-brand-orange transition-colors rounded-full hover:bg-white/10"
+              aria-label="Close"
+            >
+              <X className="w-8 h-8" />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); servicesGoPrev(); }}
+              className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-10 p-2 text-white hover:text-brand-orange transition-colors rounded-full hover:bg-white/10"
+              aria-label="Previous image"
+            >
+              <ChevronLeft className="w-8 h-8 sm:w-10 sm:h-10" />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); servicesGoNext(); }}
+              className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-10 p-2 text-white hover:text-brand-orange transition-colors rounded-full hover:bg-white/10"
+              aria-label="Next image"
+            >
+              <ChevronRight className="w-8 h-8 sm:w-10 sm:h-10" />
+            </button>
+            <AnimatePresence initial={false} mode="sync">
+              <motion.div
+                key={servicesLightboxIndex}
+                initial={{
+                  x: servicesSlideDir === 0 ? 0 : servicesSlideDir > 0 ? '100vw' : '-100vw',
+                  opacity: servicesSlideDir === 0 ? 1 : 1,
+                }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{
+                  x: servicesSlideDir === 0 ? 0 : servicesSlideDir > 0 ? '-100vw' : '100vw',
+                  opacity: 1,
+                }}
+                transition={{
+                  type: 'tween',
+                  duration: 0.35,
+                  ease: [0.25, 0.1, 0.25, 1],
+                }}
+                className="absolute inset-0 flex items-center justify-center pointer-events-none"
+              >
+                <div className="max-w-[90vw] max-h-[90vh] flex items-center justify-center">
+                  <img
+                    src={SERVICES_INCLUDING[servicesLightboxIndex].image}
+                    alt={SERVICES_INCLUDING[servicesLightboxIndex].title}
+                    className="max-w-full max-h-[90vh] w-auto h-auto object-contain select-none"
+                    referrerPolicy="no-referrer"
+                    draggable={false}
+                  />
+                </div>
+              </motion.div>
+            </AnimatePresence>
+            <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/80 text-sm">
+              {servicesLightboxIndex + 1} / {SERVICES_INCLUDING.length}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 };
@@ -479,7 +623,7 @@ const Gallery = () => {
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 referrerPolicy="no-referrer"
               />
-              <div className="absolute inset-0 bg-brand-orange/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+              <div className="absolute inset-0 bg-brand-orange/80 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex items-center justify-center pointer-events-none">
                 <span className="text-white font-bold uppercase tracking-widest text-sm border-2 border-white px-4 py-2">View full size</span>
               </div>
             </motion.div>
