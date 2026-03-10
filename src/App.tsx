@@ -16,7 +16,8 @@ import {
   Construction,
   Building2,
   Home,
-  ArrowUp
+  ArrowUp,
+  AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -47,7 +48,7 @@ const Navbar = () => {
           <div className="flex items-center space-x-2">
             <a href="#home" className="flex items-center">
               <img
-                src="/images/logo.png"
+                src="/images/logo.webp"
                 alt="CFM Fence Solutions"
                 className="h-10 w-auto"
               />
@@ -183,7 +184,7 @@ const Hero = () => {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-4">
             {[
               { value: '15+', label: 'Years Experience' },
-              { value: '100+', label: 'Client Satisfaction' },
+              { value: '100%', label: 'Client Satisfaction' },
               { value: null, label: 'Family Owned & Operated' },
               { value: null, label: 'Residential & Commercial Projects' },
               
@@ -741,14 +742,60 @@ const Contact = () => {
   ];
 
   const [serviceNeeded, setServiceNeeded] = useState(serviceOptions[0]);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const [reviews, setReviews] = useState<
+    { id: number; name: string; company?: string | null; rating: number; message: string }[]
+  >([]);
+  const [reviewsLoaded, setReviewsLoaded] = useState(false);
+  const [activeReviewIndex, setActiveReviewIndex] = useState(0);
+  const [reviewSlideDir, setReviewSlideDir] = useState(0); // 1 = next, -1 = prev
+  const [reviewSubmitStatus, setReviewSubmitStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const [reviewRating, setReviewRating] = useState(5);
+
+  useEffect(() => {
+    const loadReviews = async () => {
+      try {
+        const res = await fetch('/api/reviews');
+        if (!res.ok) throw new Error('Failed to load reviews');
+        const data = await res.json();
+        if (data.ok && Array.isArray(data.reviews)) {
+          setReviews(
+            data.reviews.map((r: any) => ({
+              id: r.id,
+              name: r.name,
+              company: r.company,
+              rating: r.rating,
+              message: r.message,
+            })),
+          );
+        }
+      } catch (err) {
+        // ignore, we just won't show reviews
+      } finally {
+        setReviewsLoaded(true);
+      }
+    };
+    loadReviews();
+  }, []);
+
+  // Auto-slide reviews carousel (only when 3+ reviews)
+  useEffect(() => {
+    if (!reviewsLoaded || reviews.length < 3) return;
+    const id = window.setInterval(() => {
+      setReviewSlideDir(1);
+      setActiveReviewIndex((prev) => (prev + 1) % reviews.length);
+    }, 7000);
+    return () => window.clearInterval(id);
+  }, [reviewsLoaded, reviews.length]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const formData = new FormData(form);
+    setSubmitStatus('sending');
 
     try {
-      const res = await fetch('/contact.php', {
+      const res = await fetch('/api/contact', {
         method: 'POST',
         body: formData,
       });
@@ -759,9 +806,32 @@ const Contact = () => {
 
       form.reset();
       setServiceNeeded(serviceOptions[0]);
-      alert('Thank you! Your request has been sent.');
+      setSubmitStatus('success');
+      setTimeout(() => setSubmitStatus('idle'), 6000);
     } catch (error) {
-      alert('Sorry, something went wrong. Please try again later.');
+      setSubmitStatus('error');
+      setTimeout(() => setSubmitStatus('idle'), 6000);
+    }
+  };
+
+  const handleReviewSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+
+    setReviewSubmitStatus('sending');
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        body: formData,
+      });
+      if (!res.ok) throw new Error('Request failed');
+      form.reset();
+      setReviewSubmitStatus('success');
+      setTimeout(() => setReviewSubmitStatus('idle'), 6000);
+    } catch (err) {
+      setReviewSubmitStatus('error');
+      setTimeout(() => setReviewSubmitStatus('idle'), 6000);
     }
   };
 
@@ -803,25 +873,125 @@ const Contact = () => {
                 </div>
                 <div>
                   <p className="text-brand-gray text-xs uppercase font-bold tracking-widest mb-1">Visit Us</p>
-                  <p className="text-brand-dark text-xl font-bold">-<br /></p>
+                  <p className="text-brand-dark text-xl font-bold">Leominster, MA<br /></p>
                 </div>
               </div>
             </div>
 
-            <div className="mt-12 p-8 bg-brand-gray-dark/50 border-l-4 border-brand-orange">
-              <div className="flex items-center space-x-2 mb-2">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <Star key={s} className="w-4 h-4 text-brand-orange fill-brand-orange" />
-                ))}
-              </div>
-              <p className="text-brand-light italic text-sm">
-                "CFM Fence Solutions transformed our facility's security. Their attention to detail and professional installation was top-notch."
-              </p>
-              <p className="text-brand-dark font-bold text-xs uppercase tracking-widest mt-4">— Rj Manapsal, Full Stack Developer</p>
+            <div className="mt-12 space-y-6">
+              {(!reviewsLoaded || reviews.length === 0) && (
+                <div className="p-8 bg-brand-gray-dark/50 border-l-4 border-brand-orange">
+                  <div className="flex items-center space-x-2 mb-2">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <Star key={s} className="w-4 h-4 text-brand-orange fill-brand-orange" />
+                    ))}
+                  </div>
+                  <p className="text-brand-light italic text-sm">
+                    "CFM Fence Solutions transformed our facility&apos;s security. Their attention to detail and
+                    professional installation was top-notch."
+                  </p>
+                  <p className="text-brand-dark font-bold text-xs uppercase tracking-widest mt-4">
+                    — Rj Manapsal, Full Stack Developer
+                  </p>
+                </div>
+              )}
+
+              {reviewsLoaded && reviews.length > 0 && (
+                <div className="space-y-4">
+                  {reviews.length < 3 ? (
+                    // 1–2 reviews: show them all stacked, no carousel
+                    reviews.map((review) => (
+                      <div
+                        key={review.id}
+                        className="p-8 bg-brand-gray-dark/50 border-l-4 border-brand-orange"
+                      >
+                        <div className="flex items-center space-x-2 mb-2">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`w-4 h-4 ${
+                                i < review.rating ? 'text-brand-orange fill-brand-orange' : 'text-brand-gray'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <p className="text-brand-light italic text-sm">
+                          &ldquo;{review.message}&rdquo;
+                        </p>
+                        <p className="text-brand-dark font-bold text-xs uppercase tracking-widest mt-4">
+                          — {review.name}
+                          {review.company ? `, ${review.company}` : ''}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    // 3+ reviews: carousel with horizontal slide
+                    <>
+                      <div className="overflow-hidden">
+                        <AnimatePresence initial={false} mode="wait">
+                          <motion.div
+                            key={reviews[activeReviewIndex]?.id ?? 'no-review'}
+                            initial={{
+                              x: reviewSlideDir === 0 ? 0 : reviewSlideDir > 0 ? '100%' : '-100%',
+                            }}
+                            animate={{ x: 0 }}
+                            exit={{
+                              x: reviewSlideDir > 0 ? '-100%' : '100%',
+                            }}
+                            transition={{ type: 'tween', duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+                            className="p-8 bg-brand-gray-dark/50 border-l-4 border-brand-orange"
+                          >
+                          <div className="flex items-center space-x-2 mb-2">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`w-4 h-4 ${
+                                  i < reviews[activeReviewIndex].rating
+                                    ? 'text-brand-orange fill-brand-orange'
+                                    : 'text-brand-gray'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <p className="text-brand-light italic text-sm">
+                            &ldquo;{reviews[activeReviewIndex].message}&rdquo;
+                          </p>
+                          <p className="text-brand-dark font-bold text-xs uppercase tracking-widest mt-4">
+                            — {reviews[activeReviewIndex].name}
+                            {reviews[activeReviewIndex].company
+                              ? `, ${reviews[activeReviewIndex].company}`
+                              : ''}
+                          </p>
+                          </motion.div>
+                        </AnimatePresence>
+                      </div>
+
+                      <div className="flex items-center justify-center gap-2 pt-1">
+                        {reviews.map((r, idx) => (
+                          <button
+                            key={r.id}
+                            type="button"
+                            onClick={() => {
+                              setReviewSlideDir(idx > activeReviewIndex ? 1 : -1);
+                              setActiveReviewIndex(idx);
+                            }}
+                            className={`h-1.5 rounded-full transition-all ${
+                              idx === activeReviewIndex
+                                ? 'w-5 bg-brand-orange'
+                                : 'w-2 bg-brand-gray-dark/60 hover:bg-brand-gray-dark'
+                            }`}
+                            aria-label={`Show review ${idx + 1}`}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="bg-white p-8 md:p-12 rounded-sm shadow-2xl">
+          <div className="bg-white p-8 md:p-12 rounded-sm shadow-2xl space-y-10">
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
@@ -892,10 +1062,143 @@ const Contact = () => {
                   placeholder="Tell us about your project..."
                 ></textarea>
               </div>
-              <button className="w-full bg-brand-orange text-white py-5 font-black uppercase tracking-widest hover:bg-orange-600 transition-all shadow-lg shadow-brand-orange/20">
-                Send Request
+              <AnimatePresence mode="wait">
+                {submitStatus === 'success' && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="flex items-center gap-3 p-4 rounded-sm border border-green-500/50 bg-green-50 text-green-800"
+                  >
+                    <CheckCircle2 className="w-5 h-5 shrink-0 text-green-600" />
+                    <p className="text-sm font-medium">Thank you! Your request has been sent. We&apos;ll get back to you soon.</p>
+                  </motion.div>
+                )}
+                {submitStatus === 'error' && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="flex items-center gap-3 p-4 rounded-sm border border-red-500/50 bg-red-50 text-red-800"
+                  >
+                    <AlertCircle className="w-5 h-5 shrink-0 text-red-600" />
+                    <p className="text-sm font-medium">Something went wrong. Please try again later.</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              <button
+                type="submit"
+                disabled={submitStatus === 'sending'}
+                className="w-full bg-brand-orange text-white py-5 font-black uppercase tracking-widest hover:bg-orange-600 transition-all shadow-lg shadow-brand-orange/20 disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {submitStatus === 'sending' ? 'Sending...' : 'Send Request'}
               </button>
             </form>
+
+            <div className="border-t border-brand-gray/15 pt-8">
+              <h4 className="text-brand-dark text-lg font-black uppercase tracking-widest mb-4">
+                Leave a Review
+              </h4>
+              <p className="text-brand-gray text-xs mb-4">
+                Share your experience with CFM Fence Solutions. Reviews are subject to approval before being featured
+                on the site.
+              </p>
+              <form className="space-y-4" onSubmit={handleReviewSubmit}>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-brand-dark text-xs font-bold uppercase tracking-widest mb-2">
+                      Name
+                    </label>
+                    <input
+                      name="name"
+                      type="text"
+                      className="w-full bg-white border border-brand-gray/20 p-3 focus:outline-none focus:border-brand-orange transition-colors text-sm"
+                      placeholder="Your name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-brand-dark text-xs font-bold uppercase tracking-widest mb-2">
+                      Company <span className="text-brand-gray">(optional)</span>
+                    </label>
+                    <input
+                      name="company"
+                      type="text"
+                      className="w-full bg-white border border-brand-gray/20 p-3 focus:outline-none focus:border-brand-orange transition-colors text-sm"
+                      placeholder="Company name"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-brand-dark text-xs font-bold uppercase tracking-widest mb-2">
+                    Review
+                  </label>
+                  <textarea
+                    name="message"
+                    rows={3}
+                    className="w-full bg-white border border-brand-gray/20 p-3 focus:outline-none focus:border-brand-orange transition-colors text-sm"
+                    placeholder="How was your experience with CFM Fence Solutions?"
+                  ></textarea>
+                </div>
+                <div className="pt-2">
+                  <label className="block text-brand-dark text-xs font-bold uppercase tracking-widest mb-3 text-center">
+                  Rate Your Experience
+                  </label>
+                  <div className="flex items-center justify-center gap-1">
+                    {Array.from({ length: 5 }).map((_, i) => {
+                      const starValue = i + 1;
+                      const active = starValue <= reviewRating;
+                      return (
+                        <button
+                          key={starValue}
+                          type="button"
+                          onClick={() => setReviewRating(starValue)}
+                          className="p-1"
+                          aria-label={`${starValue} star${starValue > 1 ? 's' : ''}`}
+                        >
+                          <Star
+                            className={`w-5 h-5 ${
+                              active ? 'text-brand-orange fill-brand-orange' : 'text-brand-gray-dark'
+                            }`}
+                          />
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <input type="hidden" name="rating" value={reviewRating} />
+                </div>
+                <AnimatePresence mode="wait">
+                  {reviewSubmitStatus === 'success' && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="flex items-center gap-3 p-3 rounded-sm border border-green-500/50 bg-green-50 text-green-800 text-sm"
+                    >
+                      <CheckCircle2 className="w-4 h-4 shrink-0 text-green-600" />
+                      <p>Your review has been submitted and is pending approval. Thank you.</p>
+                    </motion.div>
+                  )}
+                  {reviewSubmitStatus === 'error' && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="flex items-center gap-3 p-3 rounded-sm border border-red-500/50 bg-red-50 text-red-800 text-sm"
+                    >
+                      <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                      <p>We couldn&apos;t submit your review right now. Please try again later.</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <button
+                  type="submit"
+                  disabled={reviewSubmitStatus === 'sending'}
+                  className="w-full bg-brand-dark text-white py-3 font-black uppercase tracking-widest hover:bg-black transition-all disabled:opacity-70 disabled:cursor-not-allowed text-xs"
+                >
+                  {reviewSubmitStatus === 'sending' ? 'Sending Review...' : 'Submit Review'}
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </div>
@@ -912,7 +1215,7 @@ const Footer = () => {
             <div className="flex items-center justify-center md:justify-start mb-6">
               <a href="#home" className="flex items-center">
                 <img
-                  src="/images/logo.png"
+                  src="/images/logo.webp"
                   alt="CFM Fence Solutions"
                   className="h-10 w-auto"
                 />
