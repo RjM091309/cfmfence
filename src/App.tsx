@@ -223,7 +223,11 @@ const SERVICES_INCLUDING = [
     images: ['/images/stair-1.jpeg', '/images/stair-2.jpeg', '/images/stair-3.jpeg'],
   },
   { title: 'Mailboxes', subtitle: 'Wood, granite and PVC', image: '/images/mailbox1.JPEG' },
-  { title: 'Wood/Steel Guard Rail', subtitle: 'Decks, porches & safety rails', image: '/images/proj-5.jpeg' },
+  { title: 'Metal Guard Rail',
+    subtitle: 'Safety Rails', 
+    image: '/images/metal-1.jpeg',
+    images: ['/images/metal-1.jpeg', '/images/metal-2.jpeg'],
+  },
 ];
 
 const Services = () => {
