@@ -36,8 +36,16 @@
     <!-- Canonical URL -->
     <link rel="canonical" href="https://cfmfencesolutions.com/" />
 
+    <!-- Sitemap -->
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/images/logoOnly.png" />
+    <link rel="apple-touch-icon" href="/images/logoOnly.png" />
+
+    <!-- PWA -->
+    <meta name="theme-color" content="#FF6A2A" />
+    <link rel="manifest" href="/manifest.webmanifest" />
 
     <!-- Local Business Structured Data -->
     <script type="application/ld+json">
@@ -49,7 +57,18 @@
         "url": "https://cfmfencesolutions.com/",
         "telephone": "978-490-5447",
         "email": "cfmfencesolutions@gmail.com",
-        "areaServed": "Massachusetts",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Leominster",
+          "addressRegion": "MA",
+          "addressCountry": "US"
+        },
+        "areaServed": [
+          {
+            "@type": "AdministrativeArea",
+            "name": "Massachusetts"
+          }
+        ],
         "serviceType": [
           "Residential Fencing",
           "Commercial Fencing",

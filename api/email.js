@@ -1,18 +1,22 @@
 /**
  * Simple Node API for sending contact form emails.
- * Run: node api/email.js
+ * Run: node email.js
  * Env: SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, TO_EMAIL (see .env.example)
+ * CommonJS for compatibility with LiteSpeed/cPanel Node loader (require).
  */
 
-import 'dotenv/config';
-import express from 'express';
-import nodemailer from 'nodemailer';
-import multer from 'multer';
-import path from 'path';
-import mysql from 'mysql2/promise';
+require('dotenv').config();
+const express = require('express');
+const fs = require('fs');
+const nodemailer = require('nodemailer');
+const multer = require('multer');
+const path = require('path');
+const mysql = require('mysql2/promise');
 
 const app = express();
 const upload = multer(); // in-memory for multipart form
+
+const APP_VERSION = '2026-03-11-db-timeout-v1';
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -20,7 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 // CORS – allow frontend (e.g. Vite on port 2800)
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', process.env.CORS_ORIGIN || '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.sendStatus(200);
   next();
@@ -41,25 +45,74 @@ const transporter = nodemailer.createTransport({
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
+  // Required when host uses a proxy that presents its own TLS cert (e.g. Orangehost)
+  tls: { rejectUnauthorized: false },
 });
 
 // MySQL pool for leads / reviews storage
 let dbPool = null;
+let dbReady = false;
+let dbLastError = null;
+let dbInitStarted = false;
+let dbInitFinished = false;
+const DB_INIT_TIMEOUT_MS = parseInt(process.env.DB_INIT_TIMEOUT_MS || '5000', 10);
 if (process.env.DB_HOST && process.env.DB_USER && process.env.DB_NAME) {
+  const resolveSocketPath = () => {
+    if (process.env.DB_SOCKET) return process.env.DB_SOCKET;
+    if (process.env.DB_HOST !== 'localhost') return null;
+    const candidates = [
+      '/var/lib/mysql/mysql.sock',
+      '/var/run/mysqld/mysqld.sock',
+      '/tmp/mysql.sock',
+    ];
+    for (const p of candidates) {
+      try {
+        if (fs.existsSync(p)) return p;
+      } catch {
+        // ignore
+      }
+    }
+    return null;
+  };
+
+  const socketPath = resolveSocketPath();
+
   dbPool = mysql.createPool({
-    host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT || '3306', 10),
+    ...(socketPath
+      ? { socketPath }
+      : {
+          host: process.env.DB_HOST,
+          port: parseInt(process.env.DB_PORT || '3306', 10),
+          // If DB_HOST=localhost, force IPv4 so it doesn't resolve to ::1
+          ...(process.env.DB_HOST === 'localhost' ? { family: 4 } : {}),
+        }),
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
+    connectTimeout: DB_INIT_TIMEOUT_MS,
     connectionLimit: 5,
+    waitForConnections: true,
+    queueLimit: 0,
   });
 
   // Test connection once on startup and ensure base tables exist
   (async () => {
+    dbInitStarted = true;
     try {
-      const conn = await dbPool.getConnection();
-      await conn.ping();
+      const withTimeout = async (p, label) => {
+        let id;
+        const timeout = new Promise((_, reject) => {
+          id = setTimeout(() => reject(new Error(`${label} timed out after ${DB_INIT_TIMEOUT_MS}ms`)), DB_INIT_TIMEOUT_MS);
+        });
+        try {
+          return await Promise.race([p, timeout]);
+        } finally {
+          clearTimeout(id);
+        }
+      };
+
+      const conn = await withTimeout(dbPool.getConnection(), 'MySQL getConnection');
+      await withTimeout(conn.ping(), 'MySQL ping');
 
       const leadsSql = `
         CREATE TABLE IF NOT EXISTS leads (
@@ -85,27 +138,58 @@ if (process.env.DB_HOST && process.env.DB_USER && process.env.DB_NAME) {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
       `;
 
-      await conn.query(leadsSql);
-      await conn.query(reviewsSql);
+      await withTimeout(conn.query(leadsSql), 'MySQL create leads table');
+      await withTimeout(conn.query(reviewsSql), 'MySQL create reviews table');
 
       // In case the reviews table already exists from an older version without company column
       try {
-        await conn.query('ALTER TABLE reviews ADD COLUMN company VARCHAR(255) NULL AFTER name');
+        await withTimeout(
+          conn.query('ALTER TABLE reviews ADD COLUMN company VARCHAR(255) NULL AFTER name'),
+          'MySQL alter reviews table',
+        );
       } catch {
         // ignore if column already exists
       }
 
       conn.release();
+      dbReady = true;
+      dbLastError = null;
+      dbInitFinished = true;
       console.log(
         `MySQL connected: ${process.env.DB_HOST}:${process.env.DB_PORT || '3306'} / ${process.env.DB_NAME}`,
       );
     } catch (err) {
-      console.error('MySQL connection test failed; DB-backed features will not be available.', err);
+      dbLastError = err?.message || String(err);
+      console.error('MySQL connection test failed; DB-backed features will not be available.', dbLastError);
+      dbPool = null;
+      dbReady = false;
+      dbInitFinished = true;
     }
   })();
 } else {
   console.warn('MySQL env vars not fully set; leads / reviews will not be saved to DB.');
 }
+
+app.get('/api/db-status', (_req, res) => {
+  res.json({
+    ok: true,
+    db: {
+      configured: Boolean(process.env.DB_HOST && process.env.DB_USER && process.env.DB_NAME),
+      pool: Boolean(dbPool),
+      initStarted: dbInitStarted,
+      initFinished: dbInitFinished,
+      ready: Boolean(dbPool && dbReady),
+      lastError: dbLastError,
+      host: process.env.DB_HOST || null,
+      name: process.env.DB_NAME || null,
+      user: process.env.DB_USER || null,
+    },
+  });
+});
+
+app.get('/api/version', (_req, res) => {
+  res.json({ ok: true, version: APP_VERSION });
+});
 
 function getBody(req) {
   return {
@@ -126,7 +210,7 @@ function escapeHtml(s) {
     .replace(/'/g, '&#39;');
 }
 
-function generateEmailHtml({ subject, name, email, service, message }) {
+function generateEmailHtml({ subject, name, email, service, message, includeLogo }) {
   return `
   <!DOCTYPE html>
   <html lang="en">
@@ -278,7 +362,11 @@ function generateEmailHtml({ subject, name, email, service, message }) {
           <div class="header">
             <div class="brand">
               <span class="logo">
-                <img src="cid:cfm-logo" alt="CFM Fence Solutions logo" />
+                ${
+                  includeLogo
+                    ? '<img src="cid:cfm-logo" alt="CFM Fence Solutions logo" />'
+                    : '<span style="display:inline-block;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;color:#111827;">CFM Fence Solutions</span>'
+                }
               </span>
             </div>
           </div>
@@ -344,7 +432,18 @@ app.post('/api/contact', upload.none(), (req, res) => {
     message,
   ].join('\n');
 
-  const logoPath = path.resolve(process.cwd(), 'public/images/logo.png');
+  const logoPath = path.resolve(__dirname, 'public/images/logo.png');
+  const attachments = [];
+  if (fs.existsSync(logoPath)) {
+    attachments.push({
+      filename: 'logo.png',
+      path: logoPath,
+      cid: 'cfm-logo',
+      contentDisposition: 'inline',
+    });
+  } else {
+    console.warn(`Logo not found, sending without inline logo: ${logoPath}`);
+  }
 
   const mailOptions = {
     from: process.env.FROM_EMAIL || process.env.SMTP_USER,
@@ -352,14 +451,15 @@ app.post('/api/contact', upload.none(), (req, res) => {
     replyTo: email,
     subject,
     text,
-    html: generateEmailHtml({ subject, name, email, service, message }),
-    attachments: [
-      {
-        filename: 'logo.png',
-        path: logoPath,
-        cid: 'cfm-logo',
-      },
-    ],
+    html: generateEmailHtml({
+      subject,
+      name,
+      email,
+      service,
+      message,
+      includeLogo: attachments.length > 0,
+    }),
+    attachments,
   };
 
   // Save lead into MySQL (if configured)
@@ -499,9 +599,8 @@ app.post('/api/reviews', upload.none(), async (req, res) => {
 // Public endpoint: list approved reviews for frontend
 app.get('/api/reviews', async (req, res) => {
   if (!dbPool) {
-    return res.status(500).json({ ok: false, error: 'Database not configured' });
+    return res.json({ ok: true, reviews: [] });
   }
-
   try {
     const [rows] = await dbPool.query(
       'SELECT id, name, company, rating, message, created_at FROM reviews WHERE approved = 1 ORDER BY created_at DESC LIMIT 20',
@@ -509,7 +608,7 @@ app.get('/api/reviews', async (req, res) => {
     res.json({ ok: true, reviews: rows });
   } catch (err) {
     console.error('Error fetching reviews:', err);
-    res.status(500).json({ ok: false, error: 'Failed to load reviews' });
+    res.json({ ok: true, reviews: [] });
   }
 });
 
@@ -546,7 +645,14 @@ app.get('/api/reviews/approve', async (req, res) => {
   }
 });
 
+// Simple health check endpoint
+app.get('/api/health', (_req, res) => {
+  res.json({ ok: true, status: 'up' });
+});
+
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Email API running at http://localhost:${PORT}`);
 });
+
+module.exports = app;

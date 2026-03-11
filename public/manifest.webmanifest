@@ -1,0 +1,16 @@
+{
+  "name": "CFM Fence Solutions",
+  "short_name": "CFM Fence",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F2F2F0",
+  "theme_color": "#FF6A2A",
+  "icons": [
+    {
+      "src": "/images/logoOnly.png",
+      "sizes": "189x197",
+      "type": "image/png"
+    }
+  ]
+}
+

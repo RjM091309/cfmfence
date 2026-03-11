@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -223,8 +225,8 @@ const SERVICES_INCLUDING = [
     images: ['/images/stair-1.jpeg', '/images/stair-2.jpeg', '/images/stair-3.jpeg'],
   },
   { title: 'Mailboxes', subtitle: 'Wood, granite and PVC', image: '/images/mailbox1.JPEG' },
-  { title: 'Metal Guard Rail',
-    subtitle: 'Safety Rails', 
+  { title: 'Steel/Wood Guard Rail',
+    subtitle: 'Road safety and commercial properties', 
     image: '/images/metal-1.jpeg',
     images: ['/images/metal-1.jpeg', '/images/metal-2.jpeg'],
   },
@@ -747,6 +749,7 @@ const Contact = () => {
 
   const [serviceNeeded, setServiceNeeded] = useState(serviceOptions[0]);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const [submitErrorMessage, setSubmitErrorMessage] = useState<string | null>(null);
   const [reviews, setReviews] = useState<
     { id: number; name: string; company?: string | null; rating: number; message: string }[]
   >([]);
@@ -759,7 +762,7 @@ const Contact = () => {
   useEffect(() => {
     const loadReviews = async () => {
       try {
-        const res = await fetch('/api/reviews');
+        const res = await fetch(`${API_BASE}/api/reviews`);
         if (!res.ok) throw new Error('Failed to load reviews');
         const data = await res.json();
         if (data.ok && Array.isArray(data.reviews)) {
@@ -796,10 +799,18 @@ const Contact = () => {
     e.preventDefault();
     const form = e.currentTarget;
     const formData = new FormData(form);
+    const email = String(formData.get('email') || '').trim();
+    if (!email) {
+      setSubmitErrorMessage('Please enter your email address so we can reply to you.');
+      setSubmitStatus('error');
+      setTimeout(() => setSubmitStatus('idle'), 6000);
+      return;
+    }
     setSubmitStatus('sending');
+    setSubmitErrorMessage(null);
 
     try {
-      const res = await fetch('/api/contact', {
+      const res = await fetch(`${API_BASE}/api/contact`, {
         method: 'POST',
         body: formData,
       });
@@ -813,6 +824,7 @@ const Contact = () => {
       setSubmitStatus('success');
       setTimeout(() => setSubmitStatus('idle'), 6000);
     } catch (error) {
+      setSubmitErrorMessage(null);
       setSubmitStatus('error');
       setTimeout(() => setSubmitStatus('idle'), 6000);
     }
@@ -825,7 +837,7 @@ const Contact = () => {
 
     setReviewSubmitStatus('sending');
     try {
-      const res = await fetch('/api/reviews', {
+      const res = await fetch(`${API_BASE}/api/reviews`, {
         method: 'POST',
         body: formData,
       });
@@ -1012,6 +1024,7 @@ const Contact = () => {
                   <input 
                     name="email"
                     type="email" 
+                    required
                     className="w-full bg-white border border-brand-gray/20 p-4 focus:outline-none focus:border-brand-orange transition-colors"
                     placeholder="john@example.com"
                   />
@@ -1086,7 +1099,9 @@ const Contact = () => {
                     className="flex items-center gap-3 p-4 rounded-sm border border-red-500/50 bg-red-50 text-red-800"
                   >
                     <AlertCircle className="w-5 h-5 shrink-0 text-red-600" />
-                    <p className="text-sm font-medium">Something went wrong. Please try again later.</p>
+                    <p className="text-sm font-medium">
+                      {submitErrorMessage || 'Something went wrong. Please try again later.'}
+                    </p>
                   </motion.div>
                 )}
               </AnimatePresence>
