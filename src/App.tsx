@@ -869,7 +869,12 @@ const Contact = () => {
                 </div>
                 <div>
                   <p className="text-brand-gray text-xs uppercase font-bold tracking-widest mb-1">Call Us</p>
-                  <p className="text-brand-dark text-xl font-bold">978-490-5447</p>
+                  <a
+                    href="tel:+19784905447"
+                    className="text-brand-dark text-xl font-bold hover:text-brand-orange transition-colors"
+                  >
+                    978-490-5447
+                  </a>
                 </div>
               </div>
 
@@ -879,17 +884,40 @@ const Contact = () => {
                 </div>
                 <div>
                   <p className="text-brand-gray text-xs uppercase font-bold tracking-widest mb-1">Email Us</p>
-                  <p className="text-brand-dark text-xl font-bold">cfmfencesolutions@gmail.com</p>
+                  <a
+                    href="mailto:cfmfencesolutions@gmail.com"
+                    className="text-brand-dark text-xl font-bold hover:text-brand-orange transition-colors"
+                  >
+                    cfmfencesolutions@gmail.com
+                  </a>
                 </div>
               </div>
 
-              <div className="flex items-start space-x-4">
+              <a
+                href="https://www.google.com/maps?q=Leominster%2C%20MA"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-start space-x-4 hover:opacity-90 transition-opacity"
+              >
                 <div className="bg-brand-orange/10 p-3 rounded-sm">
                   <MapPin className="text-brand-orange w-6 h-6" />
                 </div>
                 <div>
                   <p className="text-brand-gray text-xs uppercase font-bold tracking-widest mb-1">Visit Us</p>
                   <p className="text-brand-dark text-xl font-bold">Leominster, MA<br /></p>
+                </div>
+              </a>
+
+              {/* Location map */}
+              <div className="mt-2 overflow-hidden rounded-sm border border-brand-gray/40 bg-white/5">
+                <div className="h-72 w-full">
+                  <iframe
+                    title="CFM Fence Solutions location map"
+                    className="h-full w-full"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    src="https://www.google.com/maps?q=Leominster%2C%20MA&z=12&output=embed"
+                  />
                 </div>
               </div>
             </div>
